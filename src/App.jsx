@@ -13,7 +13,7 @@ import { useState } from "react";
 
 // COMPLETE: Add a toggle button that lets you sort the moves in either ascending or descending order.
 
-// TODO: When someone wins, highlight the three squares that caused the win (and when no one wins, display a message about the result being a draw).
+// COMPLETE: When someone wins, highlight the three squares that caused the win (and when no one wins, display a message about the result being a draw).
 
 // TODO: Display the location for each move in the format (row, col) in the move history list.
 
@@ -34,26 +34,22 @@ export default function Game() {
     setCurrentMove(nextMove);
   }
 
-  const indices = Array.from(
-    { length: history.length },
-    (_, index) => (isAscending ? index : history.length - 1 - index)
+  const indices = Array.from({ length: history.length }, (_, index) =>
+    isAscending ? index : history.length - 1 - index
   );
-  
-    
 
   const moves = indices.map((index) => {
-      let description = index > 0 ? "Go to move #" + index : "Go to game start";
-      return (
-        <li key={index}>
-          {index === currentMove ? (
-            "You are at move " + index
-          ) : (
-            <button onClick={() => jumpTo(index)}>{description}</button>
-          )}
-        </li>
-      );
-    }
-  );
+    let description = index > 0 ? "Go to move #" + index : "Go to game start";
+    return (
+      <li key={index}>
+        {index === currentMove ? (
+          "You are at move " + index
+        ) : (
+          <button onClick={() => jumpTo(index)}>{description}</button>
+        )}
+      </li>
+    );
+  });
 
   //TODO make the div not squish into each other, move buttons down
   return (
@@ -65,39 +61,49 @@ export default function Game() {
         <button onClick={() => setIsAscending(!isAscending)}>
           {isAscending ? "Descending" : "Ascending"}
         </button>
-        <ol {...(isAscending && { reversed: true })}>{moves}</ol>
-        {/* <ol {...(isAscending ? {reversed: false} : { reversed: true })}>{moves}</ol> */}
+        {/* <ol {...(isAscending && { reversed: true })}>{moves}</ol> */}
+        <ol {...(isAscending ? { reversed: false } : { reversed: true })}>
+          {moves}
+        </ol>
         {/* <ol {...(isAscending ? {} : { reversed: true })}>{moves}</ol> */}
       </div>
     </div>
   );
 }
 
-function Square({ value, onSquareClick }) {
+function Square({ value, onSquareClick, backgroundColor = "white" }) {
   return (
-    <button className="square" onClick={onSquareClick}>
+    <button
+      className="square"
+      style={{ backgroundColor }}
+      onClick={onSquareClick}
+    >
       {value}
     </button>
   );
 }
 
 function Board({ xIsNext, squares, onPlay }) {
+  const [lines, setLines] = useState([]); //should hold the cells that have won
+
   function handleClick(i) {
-    if (squares[i] || calculateWinner(squares)) {
+    if (squares[i] || lines > 0) {
+      //square i is filled or game is won/draw
       return;
     }
 
     const nextSquares = squares.slice();
     nextSquares[i] = xIsNext ? "X" : "O";
+    setLines(calculateWinner(nextSquares));
     onPlay(nextSquares);
   }
 
-  const winner = calculateWinner(squares);
-  let status = winner
-    ? "Winner: " + winner
-    : "Next player: " + (xIsNext ? "X" : "O");
+  let status =
+    lines.length < 0
+      ? "Next player: " + (xIsNext ? "X" : "O") // Game is ongoing, determine next player
+      : "Winner: " + (xIsNext ? "O" : "X"); // Game has a winner
 
-   const boardRows = [];
+  const boardRows = [];
   for (let i = 0; i < 3; i++) {
     const squaresInRow = [];
     for (let j = 0; j < 3; j++) {
@@ -105,6 +111,7 @@ function Board({ xIsNext, squares, onPlay }) {
       squaresInRow.push(
         <Square
           key={index}
+          backgroundColor={lines.includes(index) ? "green" : "white"}
           onSquareClick={() => handleClick(index)}
           value={squares[index]}
         />
@@ -139,8 +146,8 @@ function calculateWinner(squares) {
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+      return [a, b, c];
     }
   }
-  return null;
+  return [];
 }
