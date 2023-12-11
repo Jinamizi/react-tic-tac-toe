@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-//TODO show winner
-//TODO cleare board
+//COMPLETE show winner
+//COMPLETE cleare board
 //TODO save wins
 //TODO add color to clicked square
 //TODO allow multiple boards
@@ -21,6 +21,7 @@ export default function Game() {
   const [history, setHistory] = useState([Array(9).fill(null)]);
   const [currentMove, setCurrentMove] = useState(0);
   const [isAscending, setIsAscending] = useState(true);
+  const displayOrder = isAscending ? "Ascending" : "Descending";
   const xIsNext = currentMove % 2 === 0;
   const currentSquares = history[currentMove];
 
@@ -34,11 +35,7 @@ export default function Game() {
     setCurrentMove(nextMove);
   }
 
-  const indices = Array.from({ length: history.length }, (_, index) =>
-    isAscending ? index : history.length - 1 - index
-  );
-
-  const moves = indices.map((index) => {
+  const moves = history.map((_, index) => {
     let description = index > 0 ? "Go to move #" + index : "Go to game start";
     return (
       <li key={index}>
@@ -58,48 +55,42 @@ export default function Game() {
         <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
       </div>
       <div className="game-info">
-        <button onClick={() => setIsAscending(!isAscending)}>
-          {isAscending ? "Descending" : "Ascending"}
-        </button>
-        {/* <ol {...(isAscending && { reversed: true })}>{moves}</ol> */}
-        <ol {...(isAscending ? { reversed: false } : { reversed: true })}>
-          {moves}
-        </ol>
-        {/* <ol {...(isAscending ? {} : { reversed: true })}>{moves}</ol> */}
+        <div class="center">
+          <button onClick={() => setIsAscending(!isAscending)}>
+            {displayOrder}
+          </button>
+        </div>
+        <ol>{isAscending ? moves : moves.slice().reverse()}</ol>
       </div>
     </div>
   );
 }
 
-function Square({ value, onSquareClick, backgroundColor = "white" }) {
+function Square({ value, onSquareClick, otherClasses = "" }) {
   return (
-    <button
-      className="square"
-      style={{ backgroundColor }}
-      onClick={onSquareClick}
-    >
+    <button className={"square " + otherClasses} onClick={onSquareClick}>
       {value}
     </button>
   );
 }
 
 function Board({ xIsNext, squares, onPlay }) {
-  const [lines, setLines] = useState([]); //should hold the cells that have won
-
+  // const [lines, setLines] = useState(calculateWinner(squares)); //should hold the cells that have won
+  const lines = calculateWinner(squares)
   function handleClick(i) {
-    if (squares[i] || lines > 0) {
+    if (squares[i] || lines.length > 0) {
       //square i is filled or game is won/draw
       return;
     }
 
     const nextSquares = squares.slice();
     nextSquares[i] = xIsNext ? "X" : "O";
-    setLines(calculateWinner(nextSquares));
+    // setLines(calculateWinner(nextSquares));
     onPlay(nextSquares);
   }
 
   let status =
-    lines.length < 0
+    lines.length === 0
       ? "Next player: " + (xIsNext ? "X" : "O") // Game is ongoing, determine next player
       : "Winner: " + (xIsNext ? "O" : "X"); // Game has a winner
 
@@ -111,7 +102,7 @@ function Board({ xIsNext, squares, onPlay }) {
       squaresInRow.push(
         <Square
           key={index}
-          backgroundColor={lines.includes(index) ? "green" : "white"}
+          otherClasses={lines.includes(index) ? "winning-square" : ""}
           onSquareClick={() => handleClick(index)}
           value={squares[index]}
         />
