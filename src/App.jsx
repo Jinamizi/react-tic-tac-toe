@@ -87,7 +87,7 @@ function Board({ xIsNext, squares, onPlay }) {
   const [lines, setLines] = useState([]); //should hold the cells that have won
 
   function handleClick(i) {
-    if (squares[i] || lines > 0) {
+    if (squares[i] || lines.length > 0) {
       //square i is filled or game is won/draw
       return;
     }
