@@ -70,6 +70,10 @@ body {
   text-align: center;
   width: 34px;
 }
+.winning-square {
+  background-color: yellow; 
+  color: red;
+}
 
 .board-row:after {
   clear: both;
