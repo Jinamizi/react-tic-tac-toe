@@ -1,8 +1,11 @@
 import { useState } from "react";
 
+import Board from "./components/Board";
+import "./functions.js";
+
 //COMPLETE show winner
 //COMPLETE cleare board
-//TODO save wins
+//COMPLETE save wins
 //TODO add color to clicked square
 //TODO allow multiple boards
 //TODO add a timer
@@ -21,11 +24,30 @@ export default function Game() {
   const [history, setHistory] = useState([Array(9).fill(null)]);
   const [currentMove, setCurrentMove] = useState(0);
   const [isAscending, setIsAscending] = useState(true);
+  const [results, setResults] = useState({ X: 0, O: 0, D: 0 });
   const displayOrder = isAscending ? "Ascending" : "Descending";
   const xIsNext = currentMove % 2 === 0;
   const currentSquares = history[currentMove];
 
+  function handleUpdateResults(squares) {
+    const line = calculateWinner(squares);
+    if (line.length > 0) {
+      const winner = xIsNext ? "X" : "O";
+      setResults((prevResults) => ({
+        ...prevResults,
+        [winner]: prevResults[winner] + 1,
+      }));
+    } else if (squares.every((square) => square !== null)) {
+      // Check for a draw when all squares are filled and there's no winner
+      setResults((prevResults) => ({
+        ...prevResults,
+        D : prevResults.D + 1,
+      }));
+    }
+  }
+
   function handlePlay(nextSquares) {
+    handleUpdateResults(nextSquares);
     const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
     setHistory(nextHistory); //FIXME go the way leetcode showed you to update the history array
     setCurrentMove(nextHistory.length - 1);
@@ -53,6 +75,19 @@ export default function Game() {
     <div className="game">
       <div className="game-board">
         <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
+        <div className="results">
+          <p>
+            <span className="p-2 mr-2 bg-primary text-white" id="x-span">
+              X : {results.X}
+            </span>
+            <span className="p-2 mr-2 bg-success text-white" id="o-span">
+              O : {results.O}
+            </span>
+            <span className="p-2 mr-2 bg-secondary text-white" id="d-span">
+              D : {results.D}
+            </span>
+          </p>
+        </div>
       </div>
       <div className="game-info">
         <div class="center">
@@ -60,85 +95,10 @@ export default function Game() {
             {displayOrder}
           </button>
         </div>
-        <ol>{isAscending ? moves : moves.slice().reverse()}</ol>
+        <div>
+          <ol>{isAscending ? moves : moves.slice().reverse()}</ol>
+        </div>
       </div>
     </div>
   );
-}
-
-function Square({ value, onSquareClick, otherClasses = "" }) {
-  return (
-    <button className={"square " + otherClasses} onClick={onSquareClick}>
-      {value}
-    </button>
-  );
-}
-
-function Board({ xIsNext, squares, onPlay }) {
-  // const [lines, setLines] = useState(calculateWinner(squares)); //should hold the cells that have won
-  const lines = calculateWinner(squares)
-  function handleClick(i) {
-    if (squares[i] || lines.length > 0) {
-      //square i is filled or game is won/draw
-      return;
-    }
-
-    const nextSquares = squares.slice();
-    nextSquares[i] = xIsNext ? "X" : "O";
-    // setLines(calculateWinner(nextSquares));
-    onPlay(nextSquares);
-  }
-
-  let status =
-    lines.length === 0
-      ? "Next player: " + (xIsNext ? "X" : "O") // Game is ongoing, determine next player
-      : "Winner: " + (xIsNext ? "O" : "X"); // Game has a winner
-
-  const boardRows = [];
-  for (let i = 0; i < 3; i++) {
-    const squaresInRow = [];
-    for (let j = 0; j < 3; j++) {
-      const index = i * 3 + j;
-      squaresInRow.push(
-        <Square
-          key={index}
-          otherClasses={lines.includes(index) ? "winning-square" : ""}
-          onSquareClick={() => handleClick(index)}
-          value={squares[index]}
-        />
-      );
-    }
-    boardRows.push(
-      <div key={i} className="board-row">
-        {squaresInRow}
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div className="status">{status}</div>
-      {boardRows}
-    </div>
-  );
-}
-
-function calculateWinner(squares) {
-  const lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
-  for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i];
-    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return [a, b, c];
-    }
-  }
-  return [];
 }
