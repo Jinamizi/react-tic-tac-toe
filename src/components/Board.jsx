@@ -25,9 +25,13 @@ export default function Board({ xIsNext, squares, onPlay }) {
       squaresInRow.push(
         <Square
           key={index}
-          otherClasses={lines.includes(index) ? "winning-square" : ""}
+          otherClasses={
+            (lines.includes(index) ? "winning-square" : "") +
+            " " +
+            squares[index]
+
+          }
           onSquareClick={() => handleClick(index)}
-          value={squares[index]}
         />
       );
     }

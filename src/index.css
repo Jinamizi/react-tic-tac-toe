@@ -8,6 +8,15 @@ body {
   padding: 0;
 }
 
+.title{
+  margin: 20px;
+  font-size: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+}
+
 h1 {
   margin-top: 0;
   font-size: 22px;
@@ -63,16 +72,25 @@ body {
   font-size: 24px;
   font-weight: bold;
   line-height: 34px;
-  height: 34px;
+  height: 40px;
   margin-right: -1px;
   margin-top: -1px;
   padding: 0;
   text-align: center;
-  width: 34px;
+  width: 40px;
+  background-size: contain;
 }
+
+.X {
+  background-image: url('./components/assets/cross.png');
+}
+
+.O {
+  background-image: url('./components/assets/circle.png');
+}
+
 .winning-square {
-  background-color: yellow; 
-  color: red;
+  background-color: wheat; 
 }
 
 .board-row:after {
@@ -91,4 +109,13 @@ body {
 
 .game-info {
   margin-left: 20px;
+}
+
+.reset {
+  padding: 5px 20px;
+  border: none;
+  outline: none;
+  border-radius: 50px;
+  font-size: 26px;
+  margin: 10px 0px;
 }
